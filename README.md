@@ -8,12 +8,12 @@
 ## 1. 시스템구성
 
 ### 시스템 구성도
-=> 시스템 구성도 이미지 첨부
+   ![default](https://user-images.githubusercontent.com/8528932/49825359-8a92dd00-fdc7-11e8-9519-c24e41e1e75e.png)
 
 ## 2. 구현 계획
 
 ### 구현 기능
-=> 구현 기능 이미지 첨부
+   ![default](https://user-images.githubusercontent.com/8528932/49825479-e0678500-fdc7-11e8-90eb-4c58ddf2132a.png)
 
 ### 적용 기술
 1. Controller와 Agent간 통신 
@@ -26,15 +26,15 @@
 
 2. Agent 기능 설명
     1. 허용되지 않은 IP/Port 차단 기능
-    
-         => 기능 이미지 첨부
+
+         ![ip_port](https://user-images.githubusercontent.com/8528932/49825547-0f7df680-fdc8-11e8-8d13-10984ea45057.png)
 
          Message Queue에서 추출된 Rule을 배열로 된 Rule Table에 저장한다. (Rule Table은 IoT 장비의 하드웨어적 성능을 고려하여 특정 숫자만큼으로 배열의 크기 설정)
          리눅스의 기본 방화벽에 받은 Rule의 IP/Port를 설정한다.
          
      2. 허용되지 않은 Process 차단기능
      
-        => 기능 이미지 첨부
+        ![process](https://user-images.githubusercontent.com/8528932/49825602-31777900-fdc8-11e8-9a72-faa10ac3e25a.png)
         
         Process를 차단하기 위해 사용하는 LSM(Linux Security Module)의 경우 Capability, SELinux, AppArmor, smack들의 기법들은 모두 LSM을 기반으로 하고 있을 정도이다. 하지만 특정 기법(ex. SELinux)의 API를 이용해서 기능을 제공하면 특정 기법이 설치되지 않은 환경이나 복잡한 설정 때문에 사용하지 않는 경우 동작하지 않기 때문에 LSM을 기반으로 SELinux와 같은 모듈을 만드는 것을 목적으로 한다.
         
@@ -46,11 +46,11 @@
     
     1. pthread를 사용한 Thread 생성
     
-         => thread 구조 이미지 첨부
+         ![thread](https://user-images.githubusercontent.com/8528932/49825716-6f749d00-fdc8-11e8-9091-c946d03567df.png)
     
     2. Message Queue를 사용하여 변경된 Rule 확인 기능 생성
      
-         => Message Queue를 이용하는 구조 이미지 첨부
+         ![messagequeue](https://user-images.githubusercontent.com/8528932/49825798-a21e9580-fdc8-11e8-8b1f-4b72a68e11c7.png)
      
          위의 그림을 보면 변경된 Rule을 확인하는 쓰레드에서 받은 데이터를 Message Queue에 넣는것을 볼 수 있다. 물론 전역변수를 이용하여 Thread간 공유하는 메모리 영역을 사용하여도 되나 Controller에서 전송하는 Rule의 개수는 가변적이기 때문에 위의 방식(전역변수를 이용하는 방식)을 사용할 경우 Linked List의 자료구조가 필요하다.
      
@@ -67,4 +67,4 @@
 
 ### 동작 과정(FlowChart)
 
-  => Flowchart 이미지 첨부
+  ![flowchart](https://user-images.githubusercontent.com/8528932/49825844-bf536400-fdc8-11e8-8575-b3bd5ae7bdee.png)
