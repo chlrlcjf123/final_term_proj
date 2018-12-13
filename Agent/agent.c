@@ -7,6 +7,11 @@
 #define PORT 31842
 #define SERV_ADDR "127.0.0.1"
 
+struct Rule_Protocol_Header{
+    unsigned char Protocol;
+    unsigned char Data_len[3];
+};
+
 void *firewall_func(void *data){
     printf("Thread 01\n");
 }
@@ -59,11 +64,6 @@ void *sock_recv_func(void *data){
 
     printf("Thread 03\n");
 }
-
-struct Rule_Protocol_Header{
-    unsigned char Protocol;
-    unsigned char Data_len[3];
-};
 
 int main(void){
     /* Thread Var */
