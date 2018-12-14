@@ -1,49 +1,58 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-
-#define PORT 31842
-
-struct Rule_Protocol_Header{
-    unsigned char Protocol;
-    unsigned char Data_len[3];
-};
+#include "../common_header/common.h"
 
 int main(void){
-    int server_sock = -1;
-    int client_sock = -1;
-    int client_addr_size = -1;
-    struct sockaddr_in client_addr;
-    struct sockaddr_in server_addr;
+    /* Socket Var */
+    int sock=-1;
+    struct sockaddr_in serv_addr;
+
     struct Rule_Protocol_Header rule_hdr = {0};
+    char rule_data[100];
+    unsigned char send_buff[4];
 
-    if((server_sock = socket(PF_INET, SOCK_STREAM, 0)) == -1){
-        perror("[Error] socket() error: ");
+    /* Sock Create */
+    if( (sock = socket(PF_INET, SOCK_STREAM, 0)) == -1){
+        perror("[Error] socket() error : ");
         exit(1);
     }
 
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(PORT);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    /* Server Address Conf */
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(SERV_ADDR);
+    serv_addr.sin_port = htons(PORT);
 
-    if(bind(server_sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1){
-        perror("[Error] bind() error: ");
+    /* Sock Connect */
+    if( (connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr))) == -1){
+        perror("[Error] connect() error : ");
         exit(1);
     }
 
-    if(listen(server_sock, 5) == -1){
-        perror("[Error] listen() error: ");
-        exit(1);
+    while(1){
+        printf("Input Rule Protocol Number (ex. 1: IP/Port Rule Add, 2: Process Rule Add, 4: IP/Port Rule Delete, 8: Process Rule Delete) \n: ");
+        scanf(" %c", &rule_hdr.Protocol);
+
+        printf("Input Rule Data \n: ");
+        scanf("%s", rule_data);
+
+        sprintf(rule_hdr.Data_len, "%02x", (int)strlen(rule_data));
+
+        sprintf(send_buff, "%d%s", (int)rule_hdr.Protocol-48, rule_hdr.Data_len);
+        printf("%s\n",send_buff);
+
+        //send function
+        if(send(sock, send_buff, sizeof(send_buff), 0) != sizeof(send_buff)){
+            perror("[Error] send() error : ");
+            exit(1);
+        }
+        if(send(sock, rule_data, (int)strlen(rule_data), 0) != (int)strlen(rule_data)){
+            perror("[Error] send() error : ");
+            exit(1);
+        }
     }
-
-    client_addr_size = sizeof(client_addr);
-    if((client_sock = accept(server_sock, (struct sockaddr*)&client_addr, &client_addr_size)) == -1){
-        perror("[Error] accept() error: ");
-        exit(1);
-    }
-
-
 }
 
