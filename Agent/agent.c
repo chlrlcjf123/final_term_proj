@@ -7,7 +7,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#define  BUFF_SIZE   1024
+#define BUFF_SIZE 4096
 
 typedef struct {
     long data_type;
@@ -17,20 +17,66 @@ typedef struct {
 
 int msqid;
 
+/* Firewall Thread Func */
 void *firewall_func(void *data){
     t_data recv_data;
+    char *ip_addr=NULL;
+    char *port=NULL;
+    char run_cmd[500]={0};
 
+    printf("[Info] Firewall Thread Run\n");
     while(1){
+        memset(run_cmd, 0, sizeof(run_cmd));
+        memset(&recv_data, 0, sizeof(recv_data));
+
+        /* Get Firewall Rule from Message Queue */
         if( -1 == msgrcv(msqid, &recv_data, sizeof(t_data) - sizeof(long), 1, 0)){
             perror( "msgrcv() 실패");
             exit(1);
         }
-        printf( "%ld - %d - %s\n", recv_data.data_type, recv_data.sub_type, recv_data.data_buff);
+
+        if(recv_data.sub_type == 1){
+            char *ptr = strtok(recv_data.data_buff, ";");
+            ip_addr = ptr;
+
+            while(ptr = strtok(NULL, ";")){
+                port=ptr;
+            }
+
+            printf("[Info] Firewall Rule Add (IP:%s, Port:%s)\n",ip_addr, port);
+            sprintf(run_cmd, "iptables -I INPUT 1 -p tcp -s %s --dport %s -j ACCEPT", ip_addr, port);
+
+        } else {
+            printf("[Info] Firewall Rule Delete (Rule Num:%s)\n",recv_data.data_buff);
+            sprintf(run_cmd, "iptables -D INPUT %s", recv_data.data_buff);
+        }
+        system(run_cmd);
     }
 }
 
+/* Process Thread Func*/
 void *process_func(void *data){
-    printf("Thread 02\n");
+    t_data recv_data;
+    char run_cmd[500] = {0};
+
+    printf("[Info] Process Thread Run\n");
+
+    while(1){
+        /* Get Process Rule from Message Queue */
+        if( -1 == msgrcv(msqid, &recv_data, sizeof(t_data) - sizeof(long), 2, 0)){
+            perror( "msgrcv() 실패");
+            exit(1);
+        }
+
+        if(recv_data.sub_type == 1){
+            printf("[Info] Process Rule Add\n");
+            //Process Block code here
+        } else {
+            printf("[Info] Process Rule Delete\n");
+            //Process Block Delete code here
+        }
+    }
+
 }
 
 int main(void){
